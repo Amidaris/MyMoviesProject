@@ -2,7 +2,7 @@ import requests
 
 api_token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyNGQxMTQ2MmQ1OGRiM2ZkOTU1NjlkNjk1MWUzODNlOCIsIm5iZiI6MTc1Njk5ODQ5OS4zNCwic3ViIjoiNjhiOWFiNjNmYzUzYzgzM2FlOGNkZDU4Iiwic2NvcGVzIjpbImFwaV9yZWFkIl0sInZlcnNpb24iOjF9.bPiVdjCFiGZRHPQC4t9VLqL-JhaWtVUJ_aZLIFJKlJM"
 
-def get_movies_list(list_type):
+def get_movies_list_old(list_type):
     endpoint = f"https://api.themoviedb.org/3/movie/{list_type}"
     headers = {
         "Authorization": f"Bearer {api_token}"
@@ -10,6 +10,21 @@ def get_movies_list(list_type):
     response = requests.get(endpoint, headers=headers)
     response.raise_for_status()
     return response.json()
+
+
+def call_tmdb_api(endpoint):
+   full_url = f"https://api.themoviedb.org/3/{endpoint}"
+   headers = {
+       "Authorization": f"Bearer {api_token}"
+   }
+   response = requests.get(full_url, headers=headers)
+   response.raise_for_status()
+   return response.json()
+
+
+def get_movies_list(list_type):
+   return call_tmdb_api(f"movie/{list_type}")
+
 
 def get_popular_movies():
     endpoint = "https://api.themoviedb.org/3/movie/popular"
@@ -19,9 +34,11 @@ def get_popular_movies():
     response = requests.get(endpoint, headers=headers)
     return response.json()
 
+
 def get_poster_url(poster_api_path, size="w342"):
     base_url = "https://image.tmdb.org/t/p/"
     return f"{base_url}{size}/{poster_api_path}"
+
 
 def get_single_movie(movie_id):
     endpoint = f"https://api.themoviedb.org/3/movie/{movie_id}"
@@ -31,6 +48,7 @@ def get_single_movie(movie_id):
     response = requests.get(endpoint, headers=headers)
     return response.json()
 
+
 def get_movie_cast(movie_id):
     endpoint = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
     headers = {
@@ -38,6 +56,7 @@ def get_movie_cast(movie_id):
     }
     response = requests.get(endpoint, headers=headers)
     return response.json()["cast"]
+
 
 def search(search_query):
    base_url = "https://api.themoviedb.org/3/"
@@ -50,6 +69,7 @@ def search(search_query):
    response = response.json()
    return response['results']
 
+
 def get_airing_today():
     endpoint = f"https://api.themoviedb.org/3/tv/airing_today"
     headers = {
@@ -59,3 +79,13 @@ def get_airing_today():
     response.raise_for_status()
     response = response.json()
     return response['results']
+
+
+def get_movie_images(movie_id):
+    endpoint = f"https://api.themoviedb.org/3/movie/{movie_id}/images"
+    headers = {
+        "Authorization": f"Bearer {api_token}"
+    }
+    response = requests.get(endpoint, headers=headers)
+    response.raise_for_status()
+    return response.json()
