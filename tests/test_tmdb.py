@@ -1,8 +1,10 @@
-# uruchamianie testów w cmd: pytest -v tests/test_tmdb.py
+# uruchamianie konkretnych testów w cmd: pytest -v tests/test_tmdb.py lub wszystkich: pytest -v
 
+import pytest
 import tmdb_client
-from tmdb_client import get_single_movie, get_movie_images, get_movie_cast, call_tmdb_api
+from tmdb_client import get_single_movie, get_movie_images, get_movie_cast, call_tmdb_api, get_movies_list
 from unittest.mock import Mock
+from main import app
 
 def test_get_poster_url_uses_default_size():
    # Przygotowanie danych
@@ -109,4 +111,34 @@ def test_call_tmdb_api(monkeypatch):
     monkeypatch.setattr("tmdb_client.requests.get", requests_mock)
 
     result = call_tmdb_api("movie/popular")
+    assert result == mock_data
+
+
+def test_homepage(monkeypatch):
+   api_mock = Mock(return_value={'results': []})
+   monkeypatch.setattr("tmdb_client.call_tmdb_api", api_mock)
+
+   with app.test_client() as client:
+       response = client.get('/')
+       assert response.status_code == 200
+       api_mock.assert_called_once_with('movie/popular')
+
+
+@pytest.mark.parametrize("list_type", [
+    "popular",
+    "top_rated",
+    "upcoming",
+    "now_playing"
+])
+
+def test_get_movies_list_with_valid_types(monkeypatch, list_type):
+    mock_data = {"results": [f"Mocked movie for {list_type}"]}
+    
+    def mock_call_tmdb_api(endpoint):
+        assert endpoint == f"movie/{list_type}"
+        return mock_data
+
+    monkeypatch.setattr("tmdb_client.call_tmdb_api", mock_call_tmdb_api)
+
+    result = get_movies_list(list_type)
     assert result == mock_data
